@@ -1,0 +1,96 @@
+﻿**********************
+Windows PowerShell 기록 시작
+시작 시간: 20261102214042
+사용자 이름: BOOK-H5T82BHS3V\msong
+RunAs 사용자: BOOK-H5T82BHS3V\msong
+구성 이름: 
+Machine: BOOK-H5T82BHS3V (Microsoft Windows NT 10.0.26200.0)
+호스트 응용 프로그램: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
+프로세스 ID: 36012
+PSVersion: 5.1.26100.9711
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9711
+BuildVersion: 10.0.26100.9711
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+기록이 시작되었습니다. 출력 파일은 logs\07-ssh.txt입니다.
+PS C:\Users\msong\orca\projects\Setting> ssh-keygen -t ed25519 -C "BOOK-laptop"
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (C:\Users\msong/.ssh/id_ed25519):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in C:\Users\msong/.ssh/id_ed25519
+Your public key has been saved in C:\Users\msong/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:9mo+Oz5oySgcSNIEjA5Rqw6obaxZ2FMAEYRkrs8qkLc BOOK-laptop
+The key's randomart image is:
++--[ED25519 256]--+
+|%X.              |
+|*o..             |
+|o+o              |
+|++..             |
+|Bo  .   S        |
+|BBo.   . .       |
+|++Xo o o  .      |
+|.*E.. = =.       |
+|=  . . +==       |
++----[SHA256]-----+
+PS C:\Users\msong\orca\projects\Setting> Get-ChildItem ~\.ssh
+
+
+    디렉터리: C:\Users\msong\.ssh
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----      2026-11-02   오후 9:41            399 id_ed25519
+-a----      2026-11-02   오후 9:41             94 id_ed25519.pub
+-a----      2026-07-30   오후 8:24            864 known_hosts
+-a----      2026-07-30   오후 8:21            104 known_hosts.old
+
+
+PS C:\Users\msong\orca\projects\Setting> Get-Content ~\.ssh\id_ed25519.pub
+ssh-ed25519 AAAA*** BOOK-laptop
+PS C:\Users\msong\orca\projects\Setting> gh auth refresh -h github.com -s admin:public_key
+
+PS C:\Users\msong\orca\projects\Setting> gh ssh-key add ~\.ssh\id_ed25519.pub --title "BOOK-laptop"
+
+PS C:\Users\msong\orca\projects\Setting> gh ssh-key list
+
+PS C:\Users\msong\orca\projects\Setting> ssh -T git@github.com
+
+PS C:\Users\msong\orca\projects\Setting> gh ssh-key add $HOME\.ssh\id_ed25519.pub --title "BOOK-laptop"
+
+PS C:\Users\msong\orca\projects\Setting> gh ssh-key list
+
+PS C:\Users\msong\orca\projects\Setting> ssh -T git@github.com
+
+PS C:\Users\msong\orca\projects\Setting> git remote set-url origin git@github.com:Frost0313z/dev-workstation-setup.git
+
+PS C:\Users\msong\orca\projects\Setting> git remote -v
+
+PS C:\Users\msong\orca\projects\Setting> git fetch origin
+
+PS C:\Users\msong\orca\projects\Setting> Stop-Transcript
+**********************
+Windows PowerShell 기록 끝
+종료 시간: 20261102215314
+**********************
+
+========== 사후 검증 (2026-11-02 21:55, Windows PowerShell 5.1 의 Start-Transcript 는 외부 프로그램 출력을 기록하지 않아 아래를 별도로 캡처함) ==========
+
+PS> gh ssh-key list
+BOOK-laptop	ssh-ed25519 AAAA***	2026-11-02T12:52:21Z	168469327	authentication
+
+PS> ssh -T git@github.com
+Hi Frost0313z! You've successfully authenticated, but GitHub does not provide shell access.
+
+PS> git remote -v
+origin	git@github.com:Frost0313z/dev-workstation-setup.git (fetch)
+origin	git@github.com:Frost0313z/dev-workstation-setup.git (push)
+
+PS> git ls-remote --heads origin
+6765a5ded0de4831d1751ad1bebcb044cc3f044c	refs/heads/main

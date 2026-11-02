@@ -1,0 +1,722 @@
+Script started on 2026-11-02 21:29:29+09:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="120" LINES="30"]
+msong@BOOK-H5T82BHS3V:~$ cd /mnt/c/Users/msong/orca/projects/Setting/appcd /mnt/c/Users/msong/orca/projects/Setting/app
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ cat docker-compose.yml
+services:
+  web:
+    build: .                        # 이 폴더의 Dockerfile 로 이미지 빌드
+    image: my-web:compose
+    ports:
+      - "${WEB_PORT:-8083}:80"      # 환경 변수 WEB_PORT, 없으면 8083
+    environment:
+      APP_ENV: ${APP_ENV:-dev}      # 환경 변수 APP_ENV, 없으면 dev
+
+  checker:
+    image: alpine                   # 보조 서비스: 5초마다 web 에 요청해 로그에 남김
+    depends_on:
+      - web
+    command: >
+      sh -c "while true;
+             do echo \"$$(date +%T) $$(wget -qO- http://web/ | grep -o '<h1>.*</h1>')\";
+             sleep 5;
+             done"
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose config
+name: app
+services:
+  checker:
+    command:
+      - sh
+      - -c
+      - |-
+        while true;
+               do echo "$$(date +%T) $$(wget -qO- http://web/ | grep -o '<h1>.*</h1>')";
+               sleep 5;
+               done
+    image: alpine
+    networks:
+      default: null
+    depends_on:
+      web:
+        condition: service_started
+        required: true
+  web:
+    environment:
+      APP_ENV: dev
+    image: my-web:compose
+    networks:
+      default: null
+    build:
+      context: /mnt/c/Users/msong/orca/projects/Setting/app
+      dockerfile: Dockerfile
+    ports:
+      - mode: ingress
+        target: 80
+        published: "8083"
+        protocol: tcp
+networks:
+  default:
+    name: app_default
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose up -d web
+[+] up 0/1
+ ⠋ Image my-web:compose Pulling                                                                                     0.1s
+
+ ⠙ Image my-web:compose Pulling                                                                                     0.2s
+
+ ⠹ Image my-web:compose Pulling                                                                                     0.3s
+
+ ⠸ Image my-web:compose Pulling                                                                                     0.4s
+
+ ⠼ Image my-web:compose Pulling                                                                                     0.5s
+
+ ⠴ Image my-web:compose Pulling                                                                                     0.6s
+
+ ⠦ Image my-web:compose Pulling                                                                                     0.7s
+
+ ⠧ Image my-web:compose Pulling                                                                                     0.8s
+
+ ⠇ Image my-web:compose Pulling                                                                                     0.9s
+
+ ⠏ Image my-web:compose Pulling                                                                                     1.0s
+
+ ⠋ Image my-web:compose Pulling                                                                                     1.1s
+
+ ⠙ Image my-web:compose Pulling                                                                                     1.2s
+[+] up 1/1
+ ! Image my-web:compose pull access denied for my-web, repository does not exist or may require 'docker login'      1.2s
+[+] Building 0.0s (0/1)
+ => [internal] load local bake definitions                                                                         0.0s
+[+] Building 0.2s (1/1)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 0.3s (1/1)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 0.5s (1/1)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 0.6s (1/1)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 0.8s (1/1)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 0.9s (1/2)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+[+] Building 1.0s (7/7)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+ => [internal] load build definition from Dockerfile                                                               0.0s
+ => => transferring dockerfile: 302B                                                                               0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine                                                    0.0s
+ => [internal] load .dockerignore                                                                                  0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [internal] load build context                                                                                  0.0s
+ => => transferring context: 565B                                                                                  0.0s
+ => CACHED [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c66  0.0s
+ => => resolve docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed  0.0s
+ => [2/2] COPY site/ /usr/share/nginx/html/                                                                        0.0s
+[+] Building 1.1s (8/8)
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+ => [internal] load build definition from Dockerfile                                                               0.0s
+ => => transferring dockerfile: 302B                                                                               0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine                                                    0.0s
+ => [internal] load .dockerignore                                                                                  0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [internal] load build context                                                                                  0.0s
+ => => transferring context: 565B                                                                                  0.0s
+ => CACHED [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c66  0.0s
+ => => resolve docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed  0.0s
+ => [2/2] COPY site/ /usr/share/nginx/html/                                                                        0.0s
+ => exporting to image                                                                                             0.1s
+ => => exporting layers                                                                                            0.0s
+ => => exporting manifest sha256:d0076b2b95d78afe372cecea0f5ebcdeffa04aa39200cb93ecadb0cb10ddb8e5                  0.0s
+ => => exporting config sha256:8f7f700f7d1d2102f8191da545867a7a2777cf0ba3769d52864be617466e11b6                    0.0s
+ => => exporting attestation manifest sha256:723480641b6b5905c38ee4bb5bacbe2e1dd4319fed60b42fef964f528afffb58      0.0s
+ => => exporting manifest list sha256:67cfec6a4529b8545e68e1c56d502325d093104099dd21dc5bb6b6f467ae771c             0.0s
+ => => naming to docker.io/library/my-web:compose                                                                  0.0s
+ => => unpacking to docker.io/library/my-web:compose                                                               0.0s
+[+] Building 1.2s (9/9) FINISHED
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 527B                                                                                     0.0s
+ => [internal] load build definition from Dockerfile                                                               0.0s
+ => => transferring dockerfile: 302B                                                                               0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine                                                    0.0s
+ => [internal] load .dockerignore                                                                                  0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [internal] load build context                                                                                  0.0s
+ => => transferring context: 565B                                                                                  0.0s
+ => CACHED [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c66  0.0s
+ => => resolve docker.io/library/nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed  0.0s
+ => [2/2] COPY site/ /usr/share/nginx/html/                                                                        0.0s
+ => exporting to image                                                                                             0.1s
+ => => exporting layers                                                                                            0.0s
+ => => exporting manifest sha256:d0076b2b95d78afe372cecea0f5ebcdeffa04aa39200cb93ecadb0cb10ddb8e5                  0.0s
+ => => exporting config sha256:8f7f700f7d1d2102f8191da545867a7a2777cf0ba3769d52864be617466e11b6                    0.0s
+ => => exporting attestation manifest sha256:723480641b6b5905c38ee4bb5bacbe2e1dd4319fed60b42fef964f528afffb58      0.0s
+ => => exporting manifest list sha256:67cfec6a4529b8545e68e1c56d502325d093104099dd21dc5bb6b6f467ae771c             0.0s
+ => => naming to docker.io/library/my-web:compose                                                                  0.0s
+ => => unpacking to docker.io/library/my-web:compose                                                               0.0s
+ => resolving provenance for metadata file                                                                         0.0s
+[+] up 2/3
+ ✔ Image my-web:compose Built                                                                                       2.8s
+ ✔ Network app_default  Created                                                                                     0.0s
+ ⠋ Container app-web-1  Creating                                                                                    0.0s
+
+
+
+ ⠙ Container app-web-1  Starting                                                                                    0.1s
+
+
+
+ ⠹ Container app-web-1  Starting                                                                                    0.2s
+
+
+
+ ⠸ Container app-web-1  Starting                                                                                    0.3s
+[+] up 3/3
+
+
+ ✔ Container app-web-1  Started                                                                                     0.3s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME        IMAGE            COMMAND                  SERVICE   CREATED         STATUS                            PORTS
+app-web-1   my-web:compose   "/docker-entrypoint.…"   web       9 seconds ago   Up 8 seconds (health: starting)   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ curl http://localhost:8083
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>my-web</title>
+  <style>
+    body { font-family: sans-serif; max-width: 40em; margin: 4em auto; line-height: 1.6; }
+    code { background: #eee; padding: 0 .3em; }
+  </style>
+</head>
+<body>
+  <h1>Hello from my-web</h1>
+  <p>이 페이지는 <code>nginx:alpine</code> 베이스 이미지 위에 <code>COPY</code> 로 올린 정적 HTML 입니다.</p>
+  <p>버전: 1.1 (바인드 마운트로 수정)</p>
+</body>
+</html>
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose up -d
+[+] up 1/2
+ ✔ Container app-web-1     Running                                                                                  0.0s
+ ⠋ Container app-checker-1 Creating                                                                                 0.0s
+
+
+ ⠙ Container app-checker-1 Starting                                                                                 0.1s
+
+
+ ⠹ Container app-checker-1 Starting                                                                                 0.2s
+[+] up 2/2
+
+ ✔ Container app-checker-1 Started                                                                                  0.2s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME            IMAGE            COMMAND                   SERVICE   CREATED          STATUS                    PORTS
+app-checker-1   alpine           "sh -c 'while true;\n…"   checker   22 seconds ago   Up 21 seconds
+app-web-1       my-web:compose   "/docker-entrypoint.…"    web       54 seconds ago   Up 53 seconds (healthy)   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ sleep 10
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose logs checker
+checker-1  | 12:30:53 <h1>Hello from my-web</h1>
+checker-1  | 12:30:58 <h1>Hello from my-web</h1>
+checker-1  | 12:31:03 <h1>Hello from my-web</h1>
+checker-1  | 12:31:08 <h1>Hello from my-web</h1>
+checker-1  | 12:31:13 <h1>Hello from my-web</h1>
+checker-1  | 12:31:18 <h1>Hello from my-web</h1>
+checker-1  | 12:31:23 <h1>Hello from my-web</h1>
+checker-1  | 12:31:28 <h1>Hello from my-web</h1>
+checker-1  | 12:31:33 <h1>Hello from my-web</h1>
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec checker ping -c 2 web
+PING web (172.18.0.2): 56 data bytes
+64 bytes from 172.18.0.2: seq=0 ttl=64 time=1.171 ms
+64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.122 ms
+
+--- web ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.122/0.646/1.171 ms
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec checker wget -qO- http://web/ | grep h1msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec checker wget -qO- http://web/ | grep h1
+  <h1>Hello from my-web</h1>
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME            IMAGE            COMMAND                   SERVICE   CREATED              STATUS                   PORTS
+app-checker-1   alpine           "sh -c 'while true;\n…"   checker   About a minute ago   Up About a minute
+app-web-1       my-web:compose   "/docker-entrypoint.…"    web       2 minutes ago        Up 2 minutes (healthy)   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose logs --tail 3 web
+web-1  | 172.18.0.3 - - [02/Nov/2026:12:32:53 +0000] "GET / HTTP/1.1" 200 493 "-" "Wget" "-"
+web-1  | 172.18.0.3 - - [02/Nov/2026:12:32:58 +0000] "GET / HTTP/1.1" 200 493 "-" "Wget" "-"
+web-1  | ::1 - - [02/Nov/2026:12:33:01 +0000] "GET / HTTP/1.1" 200 493 "-" "Wget" "-"
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose logs --tail 3 checker
+checker-1  | 12:32:58 <h1>Hello from my-web</h1>
+checker-1  | 12:33:03 <h1>Hello from my-web</h1>
+checker-1  | 12:33:08 <h1>Hello from my-web</h1>
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose down
+[+] down 0/1
+ ⠋ Container app-checker-1 Stopping                                                                                 0.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 0.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 0.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 0.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 0.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 0.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 0.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 0.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 0.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 1.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 1.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 1.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 1.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 1.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 1.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 1.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 1.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 1.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 1.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 2.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 2.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 2.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 2.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 2.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 2.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 2.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 2.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 2.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 2.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 3.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 3.1s
+
+ ⠙ Container app-checker-1 Removing                                                                                 3.2s
+[+] down 1/2
+ ✔ Container app-checker-1 Removed                                                                                  3.2s
+ ⠋ Container app-web-1     Stopping                                                                                 0.1s
+
+
+ ⠙ Container app-web-1     Stopping                                                                                 0.2s
+
+
+ ⠹ Container app-web-1     Stopping                                                                                 0.3s
+[+] down 2/2
+
+ ✔ Container app-web-1     Removed                                                                                  0.4s
+[+] down 2/3
+
+
+ ⠋ Network app_default     Removing                                                                                 0.1s
+
+
+
+ ⠙ Network app_default     Removing                                                                                 0.2s
+[+] down 3/3
+
+
+ ✔ Network app_default     Removed                                                                                  0.2s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker ps -a | grep app-
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose up -d
+[+] up 0/1
+ ⠋ Network app_default Creating                                                                                     0.0s
+[+] up 2/3
+ ✔ Network app_default     Created                                                                                  0.0s
+ ✔ Container app-web-1     Created                                                                                  0.1s
+ ⠋ Container app-checker-1 Creating                                                                                 0.0s
+
+
+ ⠙ Container app-web-1     Starting                                                                                 0.2s
+ ✔ Container app-checker-1 Created                                                                                  0.1s
+
+
+ ⠹ Container app-web-1     Starting                                                                                 0.3s
+
+
+
+ ✔ Container app-web-1     Started                                                                                  0.4s
+ ⠸ Container app-checker-1 Starting                                                                                 0.3s
+
+
+
+ ⠼ Container app-checker-1 Starting                                                                                 0.4s
+[+] up 3/3
+
+
+ ✔ Container app-checker-1 Started                                                                                  0.5s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME            IMAGE            COMMAND                   SERVICE   CREATED         STATUS                            PORTS
+app-checker-1   alpine           "sh -c 'while true;\n…"   checker   8 seconds ago   Up 7 seconds
+app-web-1       my-web:compose   "/docker-entrypoint.…"    web       8 seconds ago   Up 7 seconds (health: starting)   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec web env | grep APP_ENV
+APP_ENV=dev
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose down
+[+] down 0/1
+ ⠋ Container app-checker-1 Stopping                                                                                 0.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 0.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 0.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 0.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 0.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 0.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 0.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 0.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 0.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 1.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 1.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 1.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 1.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 1.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 1.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 1.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 1.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 1.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 1.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 2.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 2.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 2.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 2.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 2.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 2.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 2.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 2.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 2.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 2.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 3.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 3.1s
+
+ ⠙ Container app-checker-1 Removing                                                                                 3.2s
+[+] down 1/2
+ ✔ Container app-checker-1 Removed                                                                                  3.2s
+ ⠋ Container app-web-1     Stopping                                                                                 0.1s
+
+
+ ⠙ Container app-web-1     Stopping                                                                                 0.2s
+
+
+ ⠹ Container app-web-1     Stopping                                                                                 0.3s
+
+
+ ⠸ Container app-web-1     Removing                                                                                 0.4s
+[+] down 2/3
+
+ ✔ Container app-web-1     Removed                                                                                  0.4s
+ ⠋ Network app_default     Removing                                                                                 0.1s
+
+
+
+ ⠙ Network app_default     Removing                                                                                 0.2s
+[+] down 3/3
+
+
+ ✔ Network app_default     Removed                                                                                  0.2s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ WEB_PORT=8084 APP_ENV=prod docker compose up -d
+[+] up 0/1
+ ⠋ Network app_default Creating                                                                                     0.0s
+[+] up 2/3
+ ✔ Network app_default     Created                                                                                  0.0s
+ ✔ Container app-web-1     Created                                                                                  0.1s
+ ⠋ Container app-checker-1 Creating                                                                                 0.0s
+
+
+ ⠙ Container app-web-1     Starting                                                                                 0.2s
+ ✔ Container app-checker-1 Created                                                                                  0.1s
+
+
+ ⠹ Container app-web-1     Starting                                                                                 0.3s
+
+
+
+ ⠸ Container app-web-1     Starting                                                                                 0.4s
+
+
+
+ ✔ Container app-web-1     Started                                                                                  0.4s
+ ⠼ Container app-checker-1 Starting                                                                                 0.4s
+[+] up 3/3
+
+
+ ✔ Container app-checker-1 Started                                                                                  0.5s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME            IMAGE            COMMAND                   SERVICE   CREATED         STATUS                            PORTS
+app-checker-1   alpine           "sh -c 'while true;\n…"   checker   7 seconds ago   Up 6 seconds
+app-web-1       my-web:compose   "/docker-entrypoint.…"    web       7 seconds ago   Up 6 seconds (health: starting)   0.0.0.0:8084->80/tcp, [::]:8084->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ curl -s http://localhost:8084 | grep h1
+  <h1>Hello from my-web</h1>
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec web env | grep APP_ENV
+APP_ENV=prod
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose down
+[+] down 0/1
+ ⠋ Container app-checker-1 Stopping                                                                                 0.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 0.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 0.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 0.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 0.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 0.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 0.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 0.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 0.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 1.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 1.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 1.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 1.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 1.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 1.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 1.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 1.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 1.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 1.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 2.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 2.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 2.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 2.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 2.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 2.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 2.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 2.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 2.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 2.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 3.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 3.1s
+
+ ⠙ Container app-checker-1 Removing                                                                                 3.2s
+[+] down 1/2
+ ✔ Container app-checker-1 Removed                                                                                  3.2s
+ ⠋ Container app-web-1     Stopping                                                                                 0.1s
+
+
+ ⠙ Container app-web-1     Stopping                                                                                 0.2s
+
+
+ ⠹ Container app-web-1     Stopping                                                                                 0.3s
+[+] down 2/2
+
+ ✔ Container app-web-1     Removed                                                                                  0.4s
+[+] down 2/3
+
+
+ ⠋ Network app_default     Removing                                                                                 0.1s
+
+
+
+ ⠙ Network app_default     Removing                                                                                 0.2s
+[+] down 3/3
+
+
+ ✔ Network app_default     Removed                                                                                  0.2s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ printf 'WEB_PORT=8085\nAPP_ENV=staging\n' > .env
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ cat .env
+WEB_PORT=8085
+APP_ENV=staging
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose up -d
+[+] up 0/1
+ ⠋ Network app_default Creating                                                                                     0.0s
+[+] up 2/3
+ ✔ Network app_default     Created                                                                                  0.0s
+ ✔ Container app-web-1     Created                                                                                  0.1s
+ ⠋ Container app-checker-1 Creating                                                                                 0.0s
+
+
+ ⠙ Container app-web-1     Starting                                                                                 0.2s
+ ✔ Container app-checker-1 Created                                                                                  0.1s
+
+
+ ⠹ Container app-web-1     Starting                                                                                 0.3s
+
+
+
+ ✔ Container app-web-1     Started                                                                                  0.4s
+ ⠸ Container app-checker-1 Starting                                                                                 0.3s
+
+
+
+ ⠼ Container app-checker-1 Starting                                                                                 0.4s
+[+] up 3/3
+
+
+ ✔ Container app-checker-1 Started                                                                                  0.4s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME            IMAGE            COMMAND                   SERVICE   CREATED         STATUS                            PORTS
+app-checker-1   alpine           "sh -c 'while true;\n…"   checker   7 seconds ago   Up 6 seconds
+app-web-1       my-web:compose   "/docker-entrypoint.…"    web       7 seconds ago   Up 6 seconds (health: starting)   0.0.0.0:8085->80/tcp, [::]:8085->80/tcp
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose exec web env | grep APP_ENV
+APP_ENV=staging
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose down
+[+] down 0/1
+ ⠋ Container app-checker-1 Stopping                                                                                 0.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 0.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 0.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 0.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 0.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 0.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 0.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 0.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 0.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 1.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 1.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 1.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 1.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 1.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 1.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 1.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 1.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 1.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 1.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 2.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 2.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 2.2s
+
+ ⠹ Container app-checker-1 Stopping                                                                                 2.3s
+
+ ⠸ Container app-checker-1 Stopping                                                                                 2.4s
+
+ ⠼ Container app-checker-1 Stopping                                                                                 2.5s
+
+ ⠴ Container app-checker-1 Stopping                                                                                 2.6s
+
+ ⠦ Container app-checker-1 Stopping                                                                                 2.7s
+
+ ⠧ Container app-checker-1 Stopping                                                                                 2.8s
+
+ ⠇ Container app-checker-1 Stopping                                                                                 2.9s
+
+ ⠏ Container app-checker-1 Stopping                                                                                 3.0s
+
+ ⠋ Container app-checker-1 Stopping                                                                                 3.1s
+
+ ⠙ Container app-checker-1 Stopping                                                                                 3.2s
+[+] down 1/2
+ ✔ Container app-checker-1 Removed                                                                                  3.2s
+ ⠋ Container app-web-1     Stopping                                                                                 0.1s
+
+
+ ⠙ Container app-web-1     Stopping                                                                                 0.2s
+
+
+ ⠹ Container app-web-1     Stopping                                                                                 0.3s
+[+] down 2/3
+
+ ✔ Container app-web-1     Removed                                                                                  0.3s
+ ⠋ Network app_default     Removing                                                                                 0.0s
+
+
+
+ ⠙ Network app_default     Removing                                                                                 0.1s
+
+
+
+ ⠹ Network app_default     Removing                                                                                 0.2s
+[+] down 3/3
+
+
+ ✔ Network app_default     Removed                                                                                  0.3s
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ rm .env
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ docker compose ps
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+msong@BOOK-H5T82BHS3V:/mnt/c/Users/msong/orca/projects/Setting/app$ exit
+exit
+
+Script done on 2026-11-02 21:36:15+09:00 [COMMAND_EXIT_CODE="0"]
