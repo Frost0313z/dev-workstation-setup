@@ -1,0 +1,25 @@
+$ git --version
+git version 2.56.0.windows.4
+
+$ git config --list --global
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+user.name=Drako_Dev
+user.email=***@gmail.com
+credential.https://github.com.helper=
+credential.https://github.com.helper=!'C:\Program Files\GitHub CLI\gh.exe' auth git-credential
+credential.https://gist.github.com.helper=
+credential.https://gist.github.com.helper=!'C:\Program Files\GitHub CLI\gh.exe' auth git-credential
+init.defaultbranch=main
+
+$ git remote -v
+origin	https://github.com/Frost0313z/dev-workstation-setup.git (fetch)
+origin	https://github.com/Frost0313z/dev-workstation-setup.git (push)
+
+$ git branch -vv
+* main 9e49640 [origin/main] Initial commit
+
+$ gh repo view --json url,visibility,defaultBranchRef
+{"defaultBranchRef":{"name":"main"},"url":"https://github.com/Frost0313z/dev-workstation-setup","visibility":"PUBLIC"}
