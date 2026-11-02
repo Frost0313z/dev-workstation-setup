@@ -1,0 +1,99 @@
+Script started on 2026-11-02 18:56:40+09:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="72" LINES="30"]
+msong@BOOK-H5T82BHS3V:~/codyssey/practipwd ㅔㅈ
+/home/msong/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -la
+total 16
+drwxr-xr-x 2 msong msong 4096 Nov  2 17:48 .
+drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
+-rw-r--r-- 1 msong msong    6 Nov  2 17:48 hello.txt
+-rw-r--r-- 1 msong msong    0 Nov  2 17:47 memo.txt
+-rw-r--r-- 1 msong msong    6 Nov  2 17:48 rename.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mkdir -p ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ pwd
+/home/msong/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ touch memo.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ echo "heelo linux">hello.txt msong@BOOK-H5T82BHS3V:~/codyssey/practice$  hello.txtmsong@BOOK-H5T82BHS3V:~/codyssey/practice$
+
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat hello.txt
+heelo linux
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat memo.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cp hello.txt renamed.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mkdir sub
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mv renamed.txt sub/
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -la
+total 20
+drwxr-xr-x 3 msong msong 4096 Nov  2 18:59 .
+drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
+-rw-r--r-- 1 msong msong   12 Nov  2 18:58 hello.txt
+-rw-r--r-- 1 msong msong    0 Nov  2 18:58 memo.txt
+-rw-r--r-- 1 msong msong    6 Nov  2 17:48 rename.txt
+drwxr-xr-x 2 msong msong 4096 Nov  2 18:59 sub
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ rm sub/renamed.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ rm -r sub
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -la
+total 16
+drwxr-xr-x 2 msong msong 4096 Nov  2 19:00 .
+drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
+-rw-r--r-- 1 msong msong   12 Nov  2 18:58 hello.txt
+-rw-r--r-- 1 msong msong    0 Nov  2 18:58 memo.txt
+-rw-r--r-- 1 msong msong    6 Nov  2 17:48 rename.txt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ /home/msong/codyssey/practice /hello.txt
+bash: /home/msong/codyssey/practice/hello.txt: Permission denied
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ catm/home/msong/codyssey/prca tice/hello.txt
+cat: /home/msong/codyssey/prcatice/hello.txt: No such file or directory
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat ./hello.txt
+heelo linux
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat ../practice/hello.txt
+heelo linux
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd /tmp
+msong@BOOK-H5T82BHS3V:/tmp$ cat ./hello.txt
+cat: ./hello.txt: No such file or directory
+msong@BOOK-H5T82BHS3V:/tmp$ cat /home/msong/codyssey/practice/hello.txt
+heelo linux
+msong@BOOK-H5T82BHS3V:/tmp$ cd ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd ~/codyssey/practice
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ echo 'echo "script ran"' > ru n.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh
+-rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ./run.sh
+bash: ./run.sh: Permission denied
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod 755 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh
+-rwxr-xr-x 1 msong msong 18 Nov  2 19:07 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ./run.sh
+script ran
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod 644 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh
+-rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ./run.sh
+bash: ./run.sh: Permission denied
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mkdir secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ echo "inside" > secret/note.t xt
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -ld secret
+drwxr-xr-x 2 msong msong 4096 Nov  2 19:09 secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod 000 secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -ld secret
+d--------- 2 msong msong 4096 Nov  2 19:09 secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls secret
+ls: cannot open directory 'secret': Permission denied
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat secret/note.txt
+cat: secret/note.txt: Permission denied
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod 755 secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -ld secret
+drwxr-xr-x 2 msong msong 4096 Nov  2 19:09 secret
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat secret/note.txt
+inside
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod +x run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh
+-rwxr-xr-x 1 msong msong 18 Nov  2 19:07 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod o-r run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh
+-rwxr-x--x 1 msong msong 18 Nov  2 19:07 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ chmod 644 run.sh
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ exit
+exit
+
+Script done on 2026-11-02 19:11:52+09:00 [COMMAND_EXIT_CODE="0"]
