@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .                        # 이 폴더의 Dockerfile 로 이미지 빌드
+    image: my-web:compose
+    ports:
+      - "${WEB_PORT:-8083}:80"      # 환경 변수 WEB_PORT, 없으면 8083
+    environment:
+      APP_ENV: ${APP_ENV:-dev}      # 환경 변수 APP_ENV, 없으면 dev
+
+  checker:
+    image: alpine                   # 보조 서비스: 5초마다 web 에 요청해 로그에 남김
+    depends_on:
+      - web
+    command: >
+      sh -c "while true;
+             do echo \"$$(date +%T) $$(wget -qO- http://web/ | grep -o '<h1>.*</h1>')\";
+             sleep 5;
+             done"
