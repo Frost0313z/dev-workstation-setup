@@ -84,6 +84,39 @@
 
 `script` 로 녹화한 로그는 터미널 제어 코드를 제거한 정리본이다. 백스페이스로 오타를 고친 흔적이 몇 줄 남아 있는데(예: `ru n.sh`), 실제 실행된 명령은 바로 아래 출력이 증명한다. 손으로 고치지 않았다.
 
+### 로그 읽는 법
+
+모든 로그는 같은 모양이다. **프롬프트로 시작하는 줄이 내가 친 명령**, 그 아래 프롬프트 없는 줄이 **컴퓨터의 출력**이다.
+
+```
+msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh      ← 내가 친 명령 (프롬프트 뒤)
+-rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh             ← 출력
+root@c3111606d18f:/# whoami                                 ← root@ 로 시작하면 컨테이너 안
+PS C:\Users\msong\orca\projects\Setting> ssh-keygen ...     ← PS 로 시작하면 Windows PowerShell
+```
+
+프롬프트 앞부분으로 **어디서 친 명령인지** 구분한다.
+
+| 프롬프트 | 위치 | 쓰인 로그 |
+|---|---|---|
+| `msong@BOOK-...:~$` | WSL Ubuntu (호스트) | 03, 04, 05, 06 |
+| `root@짧은ID:/#` | Docker 컨테이너 안 | 04 |
+| `PS C:\...>` | Windows PowerShell | 01, 02, 07 |
+
+로그마다 **먼저 볼 줄**:
+
+| 로그 | 무엇을 증명하나 | 먼저 볼 줄 (행 번호) |
+|---|---|---|
+| [01-docker-설치-점검.txt](logs/01-docker-설치-점검.txt) | Docker 설치와 데몬 동작 | `Server Version: 29.9.2`, 맨 끝 `Hello from Docker!` |
+| [02-git-설정.txt](logs/02-git-설정.txt) | Git 사용자·기본 브랜치·원격 연동 | `init.defaultbranch=main`, `origin https://github.com/...` |
+| [03-터미널-실습.log](logs/03-터미널-실습.log) | 터미널 기본 조작, 절대/상대 경로, 권한 전/후 | 51행 `cd /tmp` 뒤 상대 경로 실패 · 62행 `Permission denied` → 63행 `chmod 755` → 실행 성공 · 77행 `chmod 000 secret` 뒤 81·83행 거부 |
+| [04-docker-실습.log](logs/04-docker-실습.log) | 운영 명령, 컨테이너 진입, exec/attach 차이 | 녹화가 2회다(1행, 439행). 422행 `No such container: ul` 이 오타로 실패한 1차, 587행 `docker exec -it u1 bash` 가 성공한 2차. 600행 컨테이너 안에서 `docker: command not found`. 785행 `attach` 후 exit 로 컨테이너 종료 |
+| [05-docker-커스텀.log](logs/05-docker-커스텀.log) | 빌드, 포트 매핑, 바인드 마운트, 볼륨 | 11행 빌드 인자 누락 에러 → 60행 `naming to ... my-web:1.0` 성공 · 69·71행 포트 8080/8081 실행 · 116행 `sed -i` 로 호스트 파일 수정 뒤 8082 만 바뀜 · 143행과 150행 `survive me`(볼륨 삭제 전/후) vs 160행 `No such file`(볼륨 없음) |
+| [06-compose.log](logs/06-compose.log) | Compose 단일/멀티, 운영 명령, 환경 변수 | 229행 `ping -c 2 web` 이름으로 접속 · 375행 `APP_ENV=dev` → 465행 `WEB_PORT=8084 APP_ENV=prod` → 499행 `APP_ENV=prod` → 625행 `APP_ENV=staging`(.env) · 251·376·500·626행 `compose down` |
+| [07-ssh.txt](logs/07-ssh.txt) | SSH 키 생성·등록·접속 | 20행 `ssh-keygen` · 65행 `$HOME` 경로로 등록 성공 · 83행부터 "사후 검증" 블록, 89행 `Hi Frost0313z!` |
+
+로그에 **에러가 보이면 대부분 의도한 것**이다. 권한 실습의 `Permission denied`, 볼륨 비교의 `No such file`, SSH 등록 전의 `Permission denied (publickey)` 는 "이렇게 되면 안 된다"를 보여 주는 증거다. 의도하지 않았던 에러는 [14절 트러블슈팅](#14-트러블슈팅)에 전부 정리했다.
+
 ---
 
 ## 4. 터미널 조작 로그
