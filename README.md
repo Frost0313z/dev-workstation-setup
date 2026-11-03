@@ -84,70 +84,39 @@
 
 `script` 로 녹화한 로그는 터미널 제어 코드를 제거한 정리본이다. 백스페이스로 오타를 고친 흔적이 몇 줄 남아 있는데(예: `ru n.sh`), 실제 실행된 명령은 바로 아래 출력이 증명한다. 손으로 고치지 않았다.
 
-### 로그 읽는 법
-
-모든 로그는 같은 모양이다. **프롬프트로 시작하는 줄이 내가 친 명령**, 그 아래 프롬프트 없는 줄이 **컴퓨터의 출력**이다.
-
-```
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -l run.sh      ← 내가 친 명령 (프롬프트 뒤)
--rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh             ← 출력
-root@c3111606d18f:/# whoami                                 ← root@ 로 시작하면 컨테이너 안
-PS C:\Users\msong\orca\projects\Setting> ssh-keygen ...     ← PS 로 시작하면 Windows PowerShell
-```
-
-프롬프트 앞부분으로 **어디서 친 명령인지** 구분한다.
-
-| 프롬프트 | 위치 | 쓰인 로그 |
-|---|---|---|
-| `msong@BOOK-...:~$` | WSL Ubuntu (호스트) | 03, 04, 05, 06 |
-| `root@짧은ID:/#` | Docker 컨테이너 안 | 04 |
-| `PS C:\...>` | Windows PowerShell | 01, 02, 07 |
-
-로그마다 **먼저 볼 줄**:
-
-| 로그 | 무엇을 증명하나 | 먼저 볼 줄 (행 번호) |
-|---|---|---|
-| [01-docker-설치-점검.txt](logs/01-docker-설치-점검.txt) | Docker 설치와 데몬 동작 | `Server Version: 29.9.2`, 맨 끝 `Hello from Docker!` |
-| [02-git-설정.txt](logs/02-git-설정.txt) | Git 사용자·기본 브랜치·원격 연동 | `init.defaultbranch=main`, `origin https://github.com/...` |
-| [03-터미널-실습.log](logs/03-터미널-실습.log) | 터미널 기본 조작, 절대/상대 경로, 권한 전/후 | 51행 `cd /tmp` 뒤 상대 경로 실패 · 62행 `Permission denied` → 63행 `chmod 755` → 실행 성공 · 77행 `chmod 000 secret` 뒤 81·83행 거부 |
-| [04-docker-실습.log](logs/04-docker-실습.log) | 운영 명령, 컨테이너 진입, exec/attach 차이 | 녹화가 2회다(1행, 439행). 422행 `No such container: ul` 이 오타로 실패한 1차, 587행 `docker exec -it u1 bash` 가 성공한 2차. 600행 컨테이너 안에서 `docker: command not found`. 785행 `attach` 후 exit 로 컨테이너 종료 |
-| [05-docker-커스텀.log](logs/05-docker-커스텀.log) | 빌드, 포트 매핑, 바인드 마운트, 볼륨 | 11행 빌드 인자 누락 에러 → 60행 `naming to ... my-web:1.0` 성공 · 69·71행 포트 8080/8081 실행 · 116행 `sed -i` 로 호스트 파일 수정 뒤 8082 만 바뀜 · 143행과 150행 `survive me`(볼륨 삭제 전/후) vs 160행 `No such file`(볼륨 없음) |
-| [06-compose.log](logs/06-compose.log) | Compose 단일/멀티, 운영 명령, 환경 변수 | 229행 `ping -c 2 web` 이름으로 접속 · 375행 `APP_ENV=dev` → 465행 `WEB_PORT=8084 APP_ENV=prod` → 499행 `APP_ENV=prod` → 625행 `APP_ENV=staging`(.env) · 251·376·500·626행 `compose down` |
-| [07-ssh.txt](logs/07-ssh.txt) | SSH 키 생성·등록·접속 | 20행 `ssh-keygen` · 65행 `$HOME` 경로로 등록 성공 · 83행부터 "사후 검증" 블록, 89행 `Hi Frost0313z!` |
-
-로그에 **에러가 보이면 대부분 의도한 것**이다. 권한 실습의 `Permission denied`, 볼륨 비교의 `No such file`, SSH 등록 전의 `Permission denied (publickey)` 는 "이렇게 되면 안 된다"를 보여 주는 증거다. 의도하지 않았던 에러는 [14절 트러블슈팅](#14-트러블슈팅)에 전부 정리했다.
-
 ---
 
 ## 4. 터미널 조작 로그
 
 WSL Ubuntu, `~/codyssey/practice` 에서 수행. 전체: [logs/03-터미널-실습.log](logs/03-터미널-실습.log)
 
+아래 발췌에서 `$` 로 시작하는 줄이 **내가 친 명령**, 그 밑이 **컴퓨터의 대답**이다. `#` 뒤는 설명이라 실제 로그에는 없다. 원본 로그에는 `$` 자리에 `msong@BOOK-H5T82BHS3V:~/codyssey/practice$` 처럼 "누가, 어느 폴더에서" 가 붙어 있다.
+
 ```bash
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ pwd
-/home/msong/codyssey/practice
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -la
+$ pwd                                   # 지금 내가 어느 폴더에 있나
+/home/msong/codyssey/practice           # 홈(/home/msong) 아래 codyssey/practice 폴더
+$ ls -la                                # 이 폴더 안 목록. -l 자세히, -a 숨김 파일까지
 total 16
-drwxr-xr-x 2 msong msong 4096 Nov  2 17:48 .
-drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
--rw-r--r-- 1 msong msong    6 Nov  2 17:48 hello.txt
--rw-r--r-- 1 msong msong    0 Nov  2 17:47 memo.txt
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mkdir -p ~/codyssey/practice
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ touch memo.txt
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat hello.txt
-heelo linux
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat memo.txt
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cp hello.txt renamed.txt
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mkdir sub
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ mv renamed.txt sub/
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ rm sub/renamed.txt
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ rm -r sub
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ ls -la
+drwxr-xr-x 2 msong msong 4096 Nov  2 17:48 .        # . 은 "이 폴더 자신". 맨 앞 d = 디렉토리
+drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..       # .. 은 "한 단계 위 폴더". -a 가 있어야 보인다
+-rw-r--r-- 1 msong msong    6 Nov  2 17:48 hello.txt  # 맨 앞 - = 일반 파일. 6 은 크기(바이트)
+-rw-r--r-- 1 msong msong    0 Nov  2 17:47 memo.txt   # 크기 0 = 빈 파일
+$ mkdir -p ~/codyssey/practice          # 폴더 만들기. 이미 있어서 아무 말 없이 넘어감
+$ touch memo.txt                        # 빈 파일 만들기 (있으면 시간만 갱신)
+$ cat hello.txt                         # 파일 내용 보여 줘
+heelo linux                             # 오타 그대로 들어간 내용
+$ cat memo.txt                          # 빈 파일이라 대답이 없다 (정상)
+$ cp hello.txt renamed.txt              # 복사: hello.txt → renamed.txt
+$ mkdir sub                             # sub 폴더 만들기
+$ mv renamed.txt sub/                   # 이동: renamed.txt 를 sub 폴더 안으로
+$ rm sub/renamed.txt                    # 파일 삭제 (휴지통 없음, 바로 사라짐)
+$ rm -r sub                             # 폴더 삭제. -r 은 안의 것까지
+$ ls -la                                # 정리 후 목록
 total 16
 drwxr-xr-x 2 msong msong 4096 Nov  2 19:00 .
 drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
--rw-r--r-- 1 msong msong   12 Nov  2 18:58 hello.txt
--rw-r--r-- 1 msong msong    0 Nov  2 18:58 memo.txt
+-rw-r--r-- 1 msong msong   12 Nov  2 18:58 hello.txt   # 12 바이트로 커짐 ("heelo linux" + 줄바꿈)
+-rw-r--r-- 1 msong msong    0 Nov  2 18:58 memo.txt    # sub 폴더는 사라지고 파일 2개만 남음
 ```
 
 | 요구 항목 | 명령 |
@@ -165,13 +134,13 @@ drwxr-xr-x 4 msong msong 4096 Nov  2 18:56 ..
 ### 절대 경로 vs 상대 경로 실험
 
 ```bash
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cat ./hello.txt
-heelo linux
-msong@BOOK-H5T82BHS3V:~/codyssey/practice$ cd /tmp
-msong@BOOK-H5T82BHS3V:/tmp$ cat ./hello.txt
-cat: ./hello.txt: No such file or directory
-msong@BOOK-H5T82BHS3V:/tmp$ cat /home/msong/codyssey/practice/hello.txt
-heelo linux
+$ cat ./hello.txt                               # 상대 경로. "지금 폴더(.)의 hello.txt"
+heelo linux                                     # 지금 practice 폴더에 있으니 성공
+$ cd /tmp                                       # 전혀 다른 폴더로 이동
+$ cat ./hello.txt                               # 같은 명령을 다시
+cat: ./hello.txt: No such file or directory     # 실패. "지금 폴더" 가 /tmp 로 바뀌었으니까
+$ cat /home/msong/codyssey/practice/hello.txt   # 절대 경로. 맨 꼭대기(/)부터 전체 주소
+heelo linux                                     # 어디서 치든 같은 파일이라 성공
 ```
 
 같은 `./hello.txt` 가 현재 위치에 따라 성공·실패한다. 절대 경로는 어디서 쳐도 같은 파일을 가리킨다.
@@ -185,41 +154,41 @@ heelo linux
 ### 파일 (run.sh): 644 → 755 → 644
 
 ```bash
-$ echo 'echo "script ran"' > run.sh
-$ ls -l run.sh
--rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh        # 변경 전 644: 실행 권한 없음
-$ ./run.sh
-bash: ./run.sh: Permission denied
+$ echo 'echo "script ran"' > run.sh     # "script ran 을 출력해라" 한 줄짜리 스크립트 파일 만들기
+$ ls -l run.sh                          # 권한 확인
+-rw-r--r-- 1 msong msong 18 Nov  2 19:07 run.sh    # 변경 전. rw- r-- r-- = 644. 어디에도 x(실행) 가 없다
+$ ./run.sh                              # 실행해 보기
+bash: ./run.sh: Permission denied       # 거부. 내용은 멀쩡한데 "실행해도 된다" 는 딱지(x) 가 없어서
 
-$ chmod 755 run.sh
+$ chmod 755 run.sh                      # 권한 딱지를 755 로. 소유자 rwx, 그룹 r-x, 기타 r-x
 $ ls -l run.sh
--rwxr-xr-x 1 msong msong 18 Nov  2 19:07 run.sh        # 변경 후 755
+-rwxr-xr-x 1 msong msong 18 Nov  2 19:07 run.sh    # 변경 후. x 가 세 군데 생겼다. 파일 내용은 그대로 18 바이트
 $ ./run.sh
-script ran
+script ran                              # 이제 실행된다
 
-$ chmod 644 run.sh
+$ chmod 644 run.sh                      # 원래대로 되돌리기
 $ ./run.sh
-bash: ./run.sh: Permission denied                     # 되돌리면 다시 거부
+bash: ./run.sh: Permission denied       # 다시 거부. 권한만 바뀌었을 뿐 파일은 한 번도 안 고쳤다
 ```
 
 ### 디렉토리 (secret): 755 → 000 → 755
 
 ```bash
-$ mkdir secret && echo "inside" > secret/note.txt
-$ ls -ld secret
-drwxr-xr-x 2 msong msong 4096 Nov  2 19:09 secret      # 변경 전 755
+$ mkdir secret && echo "inside" > secret/note.txt   # secret 폴더를 만들고 그 안에 note.txt 작성
+$ ls -ld secret                         # -d: 폴더 안 목록 말고 폴더 자체의 권한을 보여 줘
+drwxr-xr-x 2 msong msong 4096 Nov  2 19:09 secret   # 변경 전 755. 맨 앞 d = 디렉토리
 
-$ chmod 000 secret
+$ chmod 000 secret                      # 모든 권한 제거
 $ ls -ld secret
-d--------- 2 msong msong 4096 Nov  2 19:09 secret      # 변경 후 000
-$ ls secret
-ls: cannot open directory 'secret': Permission denied   # r 없음 → 목록 불가
-$ cat secret/note.txt
-cat: secret/note.txt: Permission denied                # x 없음 → 안으로 진입 불가
+d--------- 2 msong msong 4096 Nov  2 19:09 secret   # 변경 후 000. 딱지가 전부 - 로 바뀜
+$ ls secret                             # 폴더 안 목록 보기
+ls: cannot open directory 'secret': Permission denied   # 거부. 폴더의 r(읽기) 가 없어서 목록을 못 본다
+$ cat secret/note.txt                   # 안의 파일 읽기
+cat: secret/note.txt: Permission denied # 거부. 폴더의 x(진입) 가 없어서 안으로 못 들어간다. 파일 자체는 644 그대로
 
-$ chmod 755 secret
+$ chmod 755 secret                      # 복구
 $ cat secret/note.txt
-inside
+inside                                  # 다시 읽힌다
 ```
 
 `note.txt` 자체는 644 그대로였다. 디렉토리의 x 가 없으면 안의 파일이 읽기 가능해도 닿을 수 없다.
@@ -227,9 +196,11 @@ inside
 ### 글자 방식
 
 ```bash
-$ chmod +x run.sh  && ls -l run.sh      # -rwxr-xr-x
-$ chmod o-r run.sh && ls -l run.sh      # -rwxr-x--x  (기타에서 r 제거)
+$ chmod +x run.sh  && ls -l run.sh      # +x: 모두에게 실행 권한 추가 → -rwxr-xr-x
+$ chmod o-r run.sh && ls -l run.sh      # o-r: 기타(o)에서 읽기(r) 제거 → -rwxr-x--x
 ```
+
+숫자 대신 글자로도 바꿀 수 있다. `u`(소유자) `g`(그룹) `o`(기타) `a`(모두)에 `+`/`-` 로 `r`/`w`/`x` 를 더하거나 뺀다.
 
 ### 권한 표기 해석
 
@@ -249,27 +220,27 @@ r=4, w=2, x=1 을 더해 소유자·그룹·기타 순으로 세 자리.
 전체: [logs/01-docker-설치-점검.txt](logs/01-docker-설치-점검.txt)
 
 ```
-$ docker --version
+$ docker --version                      # 설치된 Docker 버전
 Docker version 29.9.2, build a82e528
 
-$ docker info
-Client:
+$ docker info                           # 전체 상태 점검. Client 와 Server 두 덩어리로 나온다
+Client:                                 # 내가 명령을 치는 쪽 (껍데기)
  Version:    29.9.2
- Context:    desktop-linux
+ Context:    desktop-linux              # Docker Desktop 이 제공하는 엔진에 연결 중
  ...
-Server:
+Server:                                 # 실제로 일하는 데몬 쪽. 이 블록이 나오면 데몬이 살아 있다
  Server Version: 29.9.2
  Operating System: Docker Desktop
- OSType: linux
+ OSType: linux                          # 컨테이너는 리눅스 위에서 돈다 (Windows 라도)
  Architecture: x86_64
- Total Memory: 7.551GiB
+ Total Memory: 7.551GiB                 # 컨테이너들이 나눠 쓸 수 있는 메모리
 ```
 
 `docker info` 에 Server 블록이 나오면 데몬이 동작 중이다. `docker` 명령은 클라이언트이고, 실제 작업은 백그라운드의 데몬(`dockerd`)이 한다. 데몬이 꺼져 있으면 `Cannot connect to the Docker daemon` 이 난다.
 
 ```
-$ docker run hello-world
-Hello from Docker!
+$ docker run hello-world                # 가장 작은 공식 이미지로 설치 검사. 없으면 받아서 실행
+Hello from Docker!                      # 이 줄이 보이면 받기 → 컨테이너 만들기 → 실행 → 출력 전부 성공
 This message shows that your installation appears to be working correctly.
 ```
 
@@ -280,36 +251,39 @@ This message shows that your installation appears to be working correctly.
 전체: [logs/04-docker-실습.log](logs/04-docker-실습.log), [logs/05-docker-커스텀.log](logs/05-docker-커스텀.log)
 
 ```
-$ docker pull ubuntu
-$ docker pull nginx:alpine
-$ docker images
+$ docker pull ubuntu                    # Docker Hub(공용 창고)에서 ubuntu 이미지 내려받기
+$ docker pull nginx:alpine              # nginx 웹 서버 이미지. :alpine 은 작은 리눅스 위에 올린 판
+$ docker images                         # 내 컴퓨터에 있는 이미지(틀) 목록
 IMAGE                ID             DISK USAGE   CONTENT SIZE
-hello-world:latest   c567b231f656       25.9kB         9.49kB
-my-web:1.0           443bc7876d62       93.6MB         26.3MB
-nginx:alpine         785835ea65db       94.5MB         27.2MB
-ubuntu:latest        6a06111c3b0a        163MB         45.9MB
+hello-world:latest   c567b231f656       25.9kB         9.49kB   # 설치 검사용. 아주 작다
+my-web:1.0           443bc7876d62       93.6MB         26.3MB   # 9절에서 내가 만든 이미지
+nginx:alpine         785835ea65db       94.5MB         27.2MB   # 웹 서버 베이스
+ubuntu:latest        6a06111c3b0a        163MB         45.9MB   # 깡통 리눅스. :latest 는 태그를 안 적으면 붙는 기본값
 ```
 
 ```
-$ docker run hello-world
-$ docker ps                       # 비어 있음: hello-world 는 출력 후 바로 종료됨
-$ docker ps -a
+$ docker run hello-world                # 실행하면 메시지만 찍고 바로 끝나는 컨테이너
+$ docker ps                             # "지금 돌고 있는" 컨테이너만 → 비어 있다. 이미 끝났으니까
+$ docker ps -a                          # -a: 끝난 것까지 전부
 CONTAINER ID   IMAGE         COMMAND    CREATED          STATUS                      NAMES
 ad3408697f83   hello-world   "/hello"   17 seconds ago   Exited (0) 16 seconds ago   festive_poitras
+                                        # Exited (0) = 정상 종료. 이름을 안 정해서 Docker 가 아무 이름이나 붙임
 
-$ docker run -d --name web nginx:alpine
-$ docker stop web  && docker ps -a   # Exited
-$ docker start web && docker ps      # Up
+$ docker run -d --name web nginx:alpine # -d: 뒤에서 계속 돌려라. --name web: 이름은 web
+$ docker stop web  && docker ps -a      # 정지 → 목록에 Exited 로 보인다 (사라지진 않음)
+$ docker start web && docker ps         # 다시 시작 → Up. 웹 서버는 계속 대기하니 안 끝난다
 ```
 
 ```
-$ docker stats --no-stream
+$ docker stats --no-stream              # 자원 사용량 한 번만 출력 (--no-stream 없으면 실시간 갱신)
 CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O    PIDS
 ac38020d4492   web       0.00%     16.58MiB / 7.551GiB   0.21%     1.17kB / 126B   0B / 4.1kB   19
+                                        # web 이 메모리 16MB, CPU 거의 0, 프로세스 19개로 돌고 있다
 
-$ docker exec web wget -qO- http://localhost     # 컨테이너 안에서 자기 웹 서버 호출
-$ docker logs web
+$ docker exec web wget -qO- http://localhost   # web 컨테이너 안에서 자기 자신의 웹 서버에 요청 (HTML 이 쏟아짐)
+$ docker logs web                       # web 컨테이너가 출력한 로그 보기
 ::1 - - [02/Nov/2026:11:33:48 +0000] "GET / HTTP/1.1" 200 896 "-" "Wget" "-"
+                                        # 방금 요청이 접속 기록으로 남음. 200 = 성공, Wget = 요청한 프로그램
 ```
 
 컨테이너는 메인 프로세스가 끝나면 함께 끝난다. hello-world 는 메시지 출력이 끝나 `Exited`, nginx 는 계속 대기하므로 `Up`.
@@ -320,37 +294,40 @@ $ docker logs web
 
 ### ubuntu 컨테이너 진입 (exec)
 
+프롬프트가 `$` 이면 **내 Ubuntu(밖)**, `root@...#` 이면 **컨테이너 안**이다.
+
 ```
-$ docker run -d --name u1 ubuntu sleep infinity
-$ docker exec -it u1 bash
-root@c3111606d18f:/# ls /
+$ docker run -d --name u1 ubuntu sleep infinity   # ubuntu 컨테이너 u1. "영원히 대기" 를 시켜서 안 끝나게
+$ docker exec -it u1 bash               # u1 안에 bash(터미널)를 하나 더 띄우고 거기 붙는다. -it: 키보드 연결
+root@c3111606d18f:/# ls /               # 프롬프트가 바뀜 = 컨테이너 안. 루트 폴더 목록
 bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+                                        # 내 Ubuntu 와는 다른, 컨테이너만의 파일 시스템
 root@c3111606d18f:/# echo "inside container"
 inside container
-root@c3111606d18f:/# whoami
-root
-root@c3111606d18f:/# hostname
-c3111606d18f
-root@c3111606d18f:/# touch /tmp/mark.txt
+root@c3111606d18f:/# whoami             # 나는 누구?
+root                                    # 컨테이너 안에서는 관리자(root). 밖에서는 msong 이었다
+root@c3111606d18f:/# hostname           # 이 컴퓨터 이름은?
+c3111606d18f                            # 컨테이너 ID. 밖에서는 BOOK-H5T82BHS3V 였다
+root@c3111606d18f:/# touch /tmp/mark.txt     # 흔적 남기기
 root@c3111606d18f:/# docker exec web wget -qO- http://localhost
-bash: docker: command not found          # 컨테이너 안에는 docker 가 없다 (격리)
-root@c3111606d18f:/# exit
-$ docker ps                              # u1 여전히 Up
-$ docker exec u1 ls /tmp
-mark.txt                                 # 안에서 만든 파일이 남아 있음
+bash: docker: command not found         # 컨테이너 안에는 docker 가 없다. 상자 안에서 상자를 조종할 수 없다 (격리)
+root@c3111606d18f:/# exit               # 빠져나오기
+$ docker ps                             # 프롬프트가 $ 로 돌아옴 = 밖. u1 은 여전히 Up (exec 는 컨테이너를 안 죽인다)
+$ docker exec u1 ls /tmp                # 밖에서 u1 안의 /tmp 목록을 물어보기
+mark.txt                                # 안에서 만든 파일이 그대로 있다
 ```
 
 ### attach 와 비교
 
 ```
-$ docker run -dit --name u2 ubuntu bash
-$ docker attach u2
-root@c063857f3d51:/# echo "attached"
+$ docker run -dit --name u2 ubuntu bash # 이번엔 메인 프로세스가 bash 인 컨테이너 u2
+$ docker attach u2                      # 새로 띄우는 게 아니라, 이미 돌고 있는 그 bash 에 "붙는다"
+root@c063857f3d51:/# echo "attached"    # 컨테이너 안
 attached
-root@c063857f3d51:/# exit
-$ docker ps                              # u2 없음
-$ docker ps -a
-c063857f3d51   ubuntu   "bash"   ...   Exited (0) 15 seconds ago   u2
+root@c063857f3d51:/# exit               # 이 exit 는 메인 프로세스(bash)를 끝내는 것
+$ docker ps                             # u2 가 없다. 메인 프로세스가 끝나서 컨테이너도 끝났다
+$ docker ps -a                          # 끝난 것까지 보면
+c063857f3d51   ubuntu   "bash"   ...   Exited (0) 15 seconds ago   u2     # Exited 로 남아 있다
 ```
 
 ### 관찰 정리
@@ -396,23 +373,25 @@ HEALTHCHECK --interval=10s --timeout=3s CMD wget -qO- http://localhost/ || exit 
 ### 빌드 · 실행
 
 ```
-$ cd /mnt/c/Users/msong/orca/projects/Setting/app
-$ docker build -t my-web:1.0 .
- => [internal] load build definition from Dockerfile
- => CACHED [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db...
- => [2/2] COPY site/ /usr/share/nginx/html/
- => exporting to image
- => => naming to docker.io/library/my-web:1.0
+$ cd /mnt/c/Users/msong/orca/projects/Setting/app   # Dockerfile 이 있는 폴더로. /mnt/c 는 WSL 에서 보는 Windows C: 드라이브
+$ docker build -t my-web:1.0 .          # 이미지 만들기. -t 이름:태그. 맨 끝 . = "재료는 이 폴더"
+ => [internal] load build definition from Dockerfile   # Dockerfile 읽기
+ => CACHED [1/2] FROM docker.io/library/nginx:alpine@sha256:785835ea65db...   # 1단계 FROM. 이미 받아 둬서 CACHED
+ => [2/2] COPY site/ /usr/share/nginx/html/            # 2단계 COPY. 내 HTML 을 nginx 폴더에 넣기
+ => exporting to image                                 # 층들을 이미지로 묶기
+ => => naming to docker.io/library/my-web:1.0          # my-web:1.0 이라는 이름 붙임 = 성공
 
-$ docker inspect my-web:1.0 --format '{{.Config.Labels}} {{.Config.Env}}'
+$ docker inspect my-web:1.0 --format '{{.Config.Labels}} {{.Config.Env}}'   # 이미지에 박힌 LABEL 과 ENV 꺼내 보기
 map[... org.opencontainers.image.authors:Frost0313z org.opencontainers.image.title:my-web] [... APP_ENV=dev]
+                                        # Dockerfile 의 LABEL 두 줄과 ENV 한 줄이 그대로 들어가 있다
 ```
 
 ```
-$ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
+$ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0   # 내 이미지로 실행. -p 8080:80 = 내 컴퓨터 8080 → 컨테이너 80
 $ docker ps
 CONTAINER ID   IMAGE        STATUS                    PORTS                    NAMES
 f656d73d876c   my-web:1.0   Up 37 seconds (healthy)   0.0.0.0:8080->80/tcp     my-web-8080
+                                        # (healthy) = HEALTHCHECK 통과. PORTS 에 8080->80 연결이 보인다
 ```
 
 `(healthy)` 는 HEALTHCHECK 가 통과했다는 표시다. `docker logs my-web-8080` 에 10초마다 `"GET / HTTP/1.1" 200 ... "Wget"` 이 찍히는 것이 그 흔적이다.
@@ -424,18 +403,18 @@ f656d73d876c   my-web:1.0   Up 37 seconds (healthy)   0.0.0.0:8080->80/tcp     m
 같은 이미지를 호스트 포트만 다르게 두 번 실행했다.
 
 ```
-$ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
-$ docker run -d -p 8081:80 --name my-web-8081 my-web:1.0
+$ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0   # 1호: 내 컴퓨터 8080 번
+$ docker run -d -p 8081:80 --name my-web-8081 my-web:1.0   # 2호: 같은 이미지, 내 컴퓨터 8081 번. 컨테이너 쪽은 둘 다 80
 $ docker ps
-82963e3ca867   my-web:1.0   Up 4 seconds (health: starting)   0.0.0.0:8081->80/tcp   my-web-8081
-f656d73d876c   my-web:1.0   Up 37 seconds (healthy)           0.0.0.0:8080->80/tcp   my-web-8080
-ac38020d4492   nginx:alpine Up About an hour                  80/tcp                 web
+82963e3ca867   my-web:1.0   Up 4 seconds (health: starting)   0.0.0.0:8081->80/tcp   my-web-8081   # 막 떠서 검사 중
+f656d73d876c   my-web:1.0   Up 37 seconds (healthy)           0.0.0.0:8080->80/tcp   my-web-8080   # 검사 통과
+ac38020d4492   nginx:alpine Up About an hour                  80/tcp                 web           # -p 없이 띄운 것. 밖에서 못 들어감
 
-$ curl http://localhost:8080
-  <h1>Hello from my-web</h1>
+$ curl http://localhost:8080            # 터미널에서 8080 에 요청
+  <h1>Hello from my-web</h1>            # 내 HTML 이 돌아옴
   <p>버전: 1.0</p>
-$ curl http://localhost:8081
-  <h1>Hello from my-web</h1>
+$ curl http://localhost:8081            # 8081 에도
+  <h1>Hello from my-web</h1>            # 같은 내용. 한 이미지로 컨테이너 두 개가 동시에 돈다
   <p>버전: 1.0</p>
 ```
 
@@ -449,7 +428,9 @@ $ curl http://localhost:8081
 
 ```
 172.17.0.1 - - [02/Nov/2026:12:05:33 +0000] "GET / HTTP/1.1" 200 461 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ..."
+        # 172.17.0.1 = 내 컴퓨터(호스트). Mozilla/Windows = 브라우저. 200 = 성공. 포트 매핑을 타고 들어온 증거
 172.17.0.1 - - [02/Nov/2026:12:05:34 +0000] "GET /favicon.ico HTTP/1.1" 404 555 ...
+        # 브라우저가 탭 아이콘(favicon)을 찾았는데 없어서 404. 에러가 아니라 정상
 ```
 
 ### 포트 매핑이 필요한 이유
@@ -464,17 +445,19 @@ $ curl http://localhost:8081
 
 ```
 $ docker run -d -p 8082:80 --name my-web-bind -v "$PWD/site:/usr/share/nginx/html" nginx:alpine
-$ curl -s http://localhost:8082 | grep 버전
-  <p>버전: 1.0</p>                                     # 변경 전
+        # -v 내폴더:컨테이너폴더. 내 컴퓨터의 app/site 를 컨테이너의 nginx 문서 폴더에 "그대로 연결". 복사가 아니다
+$ curl -s http://localhost:8082 | grep 버전     # 8082 에 요청해서 "버전" 이 든 줄만 뽑기
+  <p>버전: 1.0</p>                      # 변경 전
 
-$ sed -i 's/버전: 1.0/버전: 1.1 (바인드 마운트로 수정)/' site/index.html     # 호스트 파일 수정
-$ cat site/index.html | grep 버전
+$ sed -i 's/버전: 1.0/버전: 1.1 (바인드 마운트로 수정)/' site/index.html
+        # 내 컴퓨터의 파일에서 "버전: 1.0" 을 "버전: 1.1 (...)" 로 바꿔 저장. 컨테이너는 안 건드림
+$ cat site/index.html | grep 버전       # 내 파일이 바뀌었나 확인
   <p>버전: 1.1 (바인드 마운트로 수정)</p>
 
-$ curl -s http://localhost:8082 | grep 버전
-  <p>버전: 1.1 (바인드 마운트로 수정)</p>               # 변경 후: 재시작 없이 즉시 반영
-$ curl -s http://localhost:8080 | grep 버전
-  <p>버전: 1.0</p>                                     # 비교: 이미지에 COPY 한 쪽은 그대로
+$ curl -s http://localhost:8082 | grep 버전     # 바인드 마운트 컨테이너에 다시 요청
+  <p>버전: 1.1 (바인드 마운트로 수정)</p> # 변경 후. 재시작 안 했는데 바로 바뀜. 같은 파일을 보고 있으니까
+$ curl -s http://localhost:8080 | grep 버전     # 비교: 이미지에 COPY 로 구운 컨테이너
+  <p>버전: 1.0</p>                      # 그대로. 빌드할 때 복사한 사본이라 내 파일과 무관
 ```
 
 같은 파일을 고쳤는데 바인드 마운트 컨테이너(8082)만 바뀌고 이미지로 빌드한 컨테이너(8080)는 그대로다. 바인드 마운트는 복사본이 아니라 호스트 파일 그 자체를 보기 때문이다. 개발 중에는 바인드 마운트로 즉시 확인하고, 배포 시에는 이미지에 구워 어디서나 같은 결과를 보장한다.
@@ -484,36 +467,38 @@ $ curl -s http://localhost:8080 | grep 버전
 ## 12. 볼륨 영속성
 
 ```
-$ docker volume create mydata
-$ docker volume inspect mydata
+$ docker volume create mydata           # Docker 가 관리하는 저장 공간 mydata 만들기 (세이브 파일 보관함)
+$ docker volume inspect mydata          # 자세히 보기
 [{ "Driver": "local", "Mountpoint": "/var/lib/docker/volumes/mydata/_data", "Name": "mydata", ... }]
+                                        # Mountpoint = Docker 가 실제로 데이터를 두는 곳. 내가 직접 안 건드린다
 
-$ docker run -d --name vol-test -v mydata:/data ubuntu sleep infinity
+$ docker run -d --name vol-test -v mydata:/data ubuntu sleep infinity   # -v 볼륨이름:컨테이너폴더. 컨테이너의 /data = mydata
 $ docker exec vol-test sh -c 'echo "survive me" > /data/hello.txt && cat /data/hello.txt'
+                                        # 컨테이너 안 /data 에 파일 쓰고 바로 읽기
 survive me
-$ docker rm -f vol-test                                  # 컨테이너 삭제
-$ docker ps -a | grep vol-test                           # 없음
+$ docker rm -f vol-test                 # 컨테이너 삭제 (-f: 실행 중이어도 강제로)
+$ docker ps -a | grep vol-test          # 정말 없어졌나 → 아무것도 안 나옴
 
-$ docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity   # 새 컨테이너 + 같은 볼륨
-$ docker exec vol-test2 cat /data/hello.txt
-survive me                                               # 삭제 후에도 데이터 유지
+$ docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity   # 완전히 새 컨테이너에 같은 볼륨을 붙임
+$ docker exec vol-test2 cat /data/hello.txt     # 새 컨테이너에서 읽어 보기
+survive me                              # 살아 있다. 데이터는 컨테이너가 아니라 볼륨에 있었으니까
 ```
 
 비교: 볼륨 없이 같은 실험.
 
 ```
-$ docker run -d --name no-vol ubuntu sleep infinity
-$ docker exec no-vol sh -c 'echo "gone" > /data.txt && cat /data.txt'
+$ docker run -d --name no-vol ubuntu sleep infinity    # 이번엔 -v 없이
+$ docker exec no-vol sh -c 'echo "gone" > /data.txt && cat /data.txt'   # 컨테이너 안에 파일 쓰기
 gone
-$ docker rm -f no-vol
-$ docker run -d --name no-vol2 ubuntu sleep infinity
-$ docker exec no-vol2 cat /data.txt
-cat: /data.txt: No such file or directory               # 컨테이너와 함께 사라짐
+$ docker rm -f no-vol                   # 삭제
+$ docker run -d --name no-vol2 ubuntu sleep infinity   # 새 컨테이너
+$ docker exec no-vol2 cat /data.txt     # 아까 그 파일 읽어 보기
+cat: /data.txt: No such file or directory   # 없다. 컨테이너와 함께 사라졌다
 ```
 
 ```
-$ docker volume ls      # 컨테이너를 모두 지운 뒤에도
-local     mydata        # 볼륨은 남아 있다
+$ docker volume ls                      # 컨테이너를 전부 지운 뒤 볼륨 목록
+local     mydata                        # 볼륨은 그대로. 컨테이너와 수명이 다르다
 ```
 
 실습 터미널 화면 (컨테이너 4개 삭제 → `docker ps -a` 에서 사라짐 → `docker volume ls` 에 `mydata` 가 남아 있음 → 녹화 종료):
@@ -534,21 +519,23 @@ local     mydata        # 볼륨은 남아 있다
 $ git --version
 git version 2.56.0.windows.4
 
-$ git config --global init.defaultBranch main
-$ git branch -M main
+$ git config --global init.defaultBranch main   # 앞으로 새 저장소의 첫 브랜치 이름은 main 으로
+$ git branch -M main                    # 지금 저장소의 브랜치 이름을 master → main 으로 변경
 
-$ git config --list --global
-user.name=Drako_Dev
-user.email=***@gmail.com
+$ git config --list --global            # 이 컴퓨터 전체 Git 설정 보기
+user.name=Drako_Dev                     # 커밋에 찍히는 이름
+user.email=***@gmail.com                # 커밋에 찍히는 메일 (문서에서는 가림)
 credential.https://github.com.helper=!'C:\Program Files\GitHub CLI\gh.exe' auth git-credential
-init.defaultbranch=main
+                                        # GitHub 에 푸시할 때 비밀번호 대신 GitHub CLI 의 로그인을 쓴다
+init.defaultbranch=main                 # 위에서 설정한 값이 들어가 있다
 
 $ gh repo create dev-workstation-setup --public --source . --remote origin --push
-$ git remote -v
-origin  https://github.com/Frost0313z/dev-workstation-setup.git (fetch)
-origin  https://github.com/Frost0313z/dev-workstation-setup.git (push)
-$ git branch -vv
-* main 9e49640 [origin/main] Initial commit
+                                        # GitHub 에 공개 저장소 만들기 + 이 폴더와 연결(origin) + 첫 푸시
+$ git remote -v                         # 원격 저장소(GitHub 쪽) 주소 확인
+origin  https://github.com/Frost0313z/dev-workstation-setup.git (fetch)   # 받아올 때
+origin  https://github.com/Frost0313z/dev-workstation-setup.git (push)    # 올릴 때
+$ git branch -vv                        # 내 브랜치가 어느 원격 브랜치를 따라가는지
+* main 9e49640 [origin/main] Initial commit     # 로컬 main ↔ GitHub 의 main 이 연결됨
 ```
 
 VSCode 에서 GitHub 로그인 (계정 메뉴에 `Frost0313z (GitHub)`):
@@ -696,28 +683,29 @@ services:
 2부의 `docker run -d -p 8080:80 --name my-web-8080 my-web:1.0` 한 줄이 파일의 `web` 블록으로 옮겨 갔다. 실행 설정이 저장소에 남으니 누가 해도 같은 구성이 뜬다.
 
 ```
-$ docker compose up -d web
-$ docker compose ps
+$ docker compose up -d web              # 파일에 적힌 서비스 중 web 만 실행. -d: 뒤에서
+$ docker compose ps                     # Compose 가 띄운 것들의 상태
 NAME        IMAGE            SERVICE   STATUS                  PORTS
 app-web-1   my-web:compose   web       Up 53 seconds (healthy) 0.0.0.0:8083->80/tcp
-$ curl http://localhost:8083
+                                        # 이름 app-web-1 은 "폴더이름-서비스이름-번호" 로 자동 생성. 포트 8083 은 파일의 기본값
+$ curl http://localhost:8083            # 접속 확인
   <h1>Hello from my-web</h1>
 ```
 
 ### 17-2. 멀티 컨테이너 + 서비스 디스커버리
 
 ```
-$ docker compose up -d
+$ docker compose up -d                  # 이번엔 서비스 이름 없이 → 파일의 전부
 [+] up 2/2
- ✔ Container app-web-1      Running
- ✔ Container app-checker-1  Started
-$ docker compose logs checker
-checker-1  | 12:30:53 <h1>Hello from my-web</h1>
-checker-1  | 12:30:58 <h1>Hello from my-web</h1>
+ ✔ Container app-web-1      Running     # 이미 떠 있던 web 은 그대로
+ ✔ Container app-checker-1  Started     # checker 가 새로 시작됨
+$ docker compose logs checker           # checker 의 출력 보기
+checker-1  | 12:30:53 <h1>Hello from my-web</h1>   # 5초마다 http://web/ 에 요청해서 받은 제목
+checker-1  | 12:30:58 <h1>Hello from my-web</h1>   # IP 가 아니라 "web" 이라는 이름으로 접속 성공
 checker-1  | 12:31:03 <h1>Hello from my-web</h1>
-$ docker compose exec checker ping -c 2 web
-PING web (172.18.0.2): 56 data bytes
-64 bytes from 172.18.0.2: seq=0 ttl=64 time=1.171 ms
+$ docker compose exec checker ping -c 2 web   # checker 안에서 web 에게 ping 2번
+PING web (172.18.0.2): 56 data bytes    # 이름 web 이 IP 172.18.0.2 로 풀렸다 (서비스 디스커버리)
+64 bytes from 172.18.0.2: seq=0 ttl=64 time=1.171 ms   # 응답 옴
 64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.122 ms
 ```
 
@@ -728,17 +716,18 @@ checker 는 `http://web/` 이라는 **서비스 이름**으로 web 에 접속했
 ### 17-3. 운영 명령 루틴
 
 ```
-$ docker compose ps                        # 상태
-$ docker compose logs --tail 3 web         # web 쪽에는 checker(172.18.0.3)의 접속이 찍힘
+$ docker compose ps                     # 상태 확인
+$ docker compose logs --tail 3 web      # web 의 마지막 3줄
 web-1  | 172.18.0.3 - - [02/Nov/2026:12:32:53 +0000] "GET / HTTP/1.1" 200 493 "-" "Wget" "-"
 web-1  | 172.18.0.3 - - [02/Nov/2026:12:32:58 +0000] "GET / HTTP/1.1" 200 493 "-" "Wget" "-"
-$ docker compose logs --tail 3 checker
+                                        # 172.18.0.3 = checker. 5초마다 들어온 접속이 web 쪽 기록에도 남았다
+$ docker compose logs --tail 3 checker  # checker 의 마지막 3줄
 checker-1  | 12:33:08 <h1>Hello from my-web</h1>
-$ docker compose down                      # 컨테이너 정지·삭제 + 네트워크 제거
+$ docker compose down                   # 전부 정지 + 삭제 + 둘을 묶던 네트워크까지 제거
  ✔ Container app-checker-1  Removed
  ✔ Container app-web-1      Removed
- ✔ Network app_default      Removed
-$ docker compose ps                        # 비어 있음
+ ✔ Network app_default      Removed     # Compose 가 자동으로 만들었던 네트워크
+$ docker compose ps                     # 아무것도 없음
 ```
 
 `up -d` → `ps` → `logs` → `down`. 2부에서 `docker run`, `docker ps`, `docker logs`, `docker rm -f` 로 하던 일이 서비스 단위 네 명령으로 묶였다.
@@ -748,30 +737,30 @@ $ docker compose ps                        # 비어 있음
 파일은 한 글자도 안 고치고, 환경 변수만 바꿔 세 번 띄웠다.
 
 ```
-$ docker compose up -d                                    # 기본값
+$ docker compose up -d                  # 1회: 아무것도 안 주고 실행
 $ docker compose ps
-app-web-1   ...   0.0.0.0:8083->80/tcp
-$ docker compose exec web env | grep APP_ENV
-APP_ENV=dev
+app-web-1   ...   0.0.0.0:8083->80/tcp  # 포트 8083 = 파일에 적힌 기본값 ${WEB_PORT:-8083}
+$ docker compose exec web env | grep APP_ENV    # web 안의 환경 변수 중 APP_ENV 만 보기
+APP_ENV=dev                             # 기본값 dev
 $ docker compose down
 
-$ WEB_PORT=8084 APP_ENV=prod docker compose up -d         # 명령 앞에 변수
+$ WEB_PORT=8084 APP_ENV=prod docker compose up -d   # 2회: 명령 앞에 변수 두 개를 붙여서 실행
 $ docker compose ps
-app-web-1   ...   0.0.0.0:8084->80/tcp
+app-web-1   ...   0.0.0.0:8084->80/tcp  # 포트가 8084 로 바뀜. 파일은 안 고쳤다
 $ curl -s http://localhost:8084 | grep h1
-  <h1>Hello from my-web</h1>
+  <h1>Hello from my-web</h1>            # 8084 로 접속됨
 $ docker compose exec web env | grep APP_ENV
-APP_ENV=prod
+APP_ENV=prod                            # 모드도 prod 로 바뀜
 $ docker compose down
 
-$ printf 'WEB_PORT=8085\nAPP_ENV=staging\n' > .env       # .env 파일 (자동으로 읽힘)
-$ docker compose up -d
+$ printf 'WEB_PORT=8085\nAPP_ENV=staging\n' > .env   # 3회: 변수를 .env 파일에 적어 두기
+$ docker compose up -d                  # 아무것도 안 붙였는데
 $ docker compose ps
-app-web-1   ...   0.0.0.0:8085->80/tcp
+app-web-1   ...   0.0.0.0:8085->80/tcp  # 8085. Compose 가 .env 를 자동으로 읽었다
 $ docker compose exec web env | grep APP_ENV
 APP_ENV=staging
 $ docker compose down
-$ rm .env                                                 # .env 는 저장소에 올리지 않음
+$ rm .env                               # 실습 끝. .env 는 비밀값을 두는 자리라 저장소에 안 올린다
 ```
 
 | 실행 | WEB_PORT | APP_ENV | 설정 출처 |
@@ -788,11 +777,13 @@ $ rm .env                                                 # .env 는 저장소�
 
 **키 쌍 생성** (Windows OpenSSH, ed25519):
 
+`PS>` 로 시작하는 줄은 Windows PowerShell 에서 친 명령이다.
+
 ```powershell
-PS> ssh-keygen -t ed25519 -C "BOOK-laptop"
-Your identification has been saved in C:\Users\msong/.ssh/id_ed25519        # 개인키: PC 밖으로 안 나감
-Your public key has been saved in C:\Users\msong/.ssh/id_ed25519.pub        # 공개키: GitHub 에 등록
-The key fingerprint is:
+PS> ssh-keygen -t ed25519 -C "BOOK-laptop"    # 키 쌍 만들기. -t 방식(ed25519), -C 는 메모
+Your identification has been saved in C:\Users\msong/.ssh/id_ed25519        # 개인키. 이 PC 밖으로 절대 안 나간다
+Your public key has been saved in C:\Users\msong/.ssh/id_ed25519.pub        # 공개키. 이걸 GitHub 에 등록한다
+The key fingerprint is:                 # 지문 = 키를 짧게 요약한 값. 공개해도 된다
 SHA256:9mo+Oz5oySgcSNIEjA5Rqw6obaxZ2FMAEYRkrs8qkLc BOOK-laptop
 ```
 
@@ -805,12 +796,12 @@ SHA256:9mo+Oz5oySgcSNIEjA5Rqw6obaxZ2FMAEYRkrs8qkLc BOOK-laptop
 **등록 전 접속 시도** (키가 GitHub 에 없으니 거부되는 것이 정상):
 
 ```
-PS> ssh -T git@github.com
-The authenticity of host 'github.com (20.200.245.247)' can't be established.
-ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.   # GitHub 공식 지문과 일치
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
-git@github.com: Permission denied (publickey).
+PS> ssh -T git@github.com               # SSH 로 GitHub 에 "나 누구게?" 하고 두드려 보기
+The authenticity of host 'github.com (20.200.245.247)' can't be established.   # 처음 보는 서버라 신원 확인 요청
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.   # GitHub 가 공식 문서에 올린 지문과 같다
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes        # 진짜 GitHub 니까 yes
+Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.   # 다음부턴 안 묻는다
+git@github.com: Permission denied (publickey).   # 거부. GitHub 가 내 공개키를 아직 모르니까 (등록 전이라 정상)
 ```
 
 ![등록 전: 권한 승인 후 첫 접속 시도](docs/images/ssh-등록-전.png)
@@ -820,11 +811,12 @@ git@github.com: Permission denied (publickey).
 **공개키 등록 후 재접속**:
 
 ```
-PS> gh ssh-key add $HOME\.ssh\id_ed25519.pub --title "BOOK-laptop"
-PS> gh ssh-key list
-BOOK-laptop    ssh-ed25519 AAAA***    2026-11-02T12:52:21Z    authentication
-PS> ssh -T git@github.com
+PS> gh ssh-key add $HOME\.ssh\id_ed25519.pub --title "BOOK-laptop"   # 공개키 파일을 내 GitHub 계정에 등록
+PS> gh ssh-key list                     # 등록된 키 목록
+BOOK-laptop    ssh-ed25519 AAAA***    2026-11-02T12:52:21Z    authentication   # 들어갔다 (키 본문은 가림)
+PS> ssh -T git@github.com               # 아까와 똑같은 명령
 Hi Frost0313z! You've successfully authenticated, but GitHub does not provide shell access.
+                                        # 이번엔 통과. "shell access 없음" 은 에러가 아니라 "로그인은 됐고 터미널은 안 열어 줌"
 ```
 
 같은 명령이 등록 전에는 `Permission denied`, 등록 후에는 `Hi Frost0313z!`. "shell access 를 주지 않는다"는 에러가 아니라 "인증은 됐고 터미널은 안 열어 준다"는 뜻이다.
@@ -832,12 +824,12 @@ Hi Frost0313z! You've successfully authenticated, but GitHub does not provide sh
 **원격 주소를 SSH 로 전환**:
 
 ```
-PS> git remote set-url origin git@github.com:Frost0313z/dev-workstation-setup.git
+PS> git remote set-url origin git@github.com:Frost0313z/dev-workstation-setup.git   # 원격 주소를 https:// 에서 git@ (SSH) 로 교체
 PS> git remote -v
-origin  git@github.com:Frost0313z/dev-workstation-setup.git (fetch)
-origin  git@github.com:Frost0313z/dev-workstation-setup.git (push)
-PS> git ls-remote --heads origin
-6765a5ded0de4831d1751ad1bebcb044cc3f044c        refs/heads/main
+origin  git@github.com:Frost0313z/dev-workstation-setup.git (fetch)   # 이제 받을 때도
+origin  git@github.com:Frost0313z/dev-workstation-setup.git (push)    # 올릴 때도 SSH
+PS> git ls-remote --heads origin        # SSH 로 GitHub 에 브랜치 목록 물어보기 = 실제 통신 테스트
+6765a5ded0de4831d1751ad1bebcb044cc3f044c        refs/heads/main   # 대답이 왔다. SSH 연결 동작
 ```
 
 이 README 를 포함한 마지막 커밋은 이 SSH 주소로 푸시했다 (트러블슈팅 9번 참고: 로그 뒷부분의 "사후 검증" 블록이 출력 증거).
